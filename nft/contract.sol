@@ -1113,3 +1113,76 @@ abstract contract ERC721URIStorage is ERC721 {
         }
     }
 }
+contract ticket_event is ERC721URIStorage , Ownable{
+
+        address public artist;
+        uint256 public royalityFee;
+	mapping (address => bool) public whitelisted;
+        mapping (address => bool) public blacklisted;
+	event Minted(address to, uint256 tokenId);
+	event Burned(uint256 tokenId);
+        constructor (
+                        string memory _name,
+                        string memory _symbol,
+                        uint256 _royalityFee,
+                        address _artist
+                        ) ERC721( _name , _symbol)
+                                {
+                               royalityFee = _royalityFee;
+                                artist = _artist;
+                                }
+
+        function mintNft(string memory tokenURI , address receiver , uint256 tokenId) public onlyOwner {
+		require( !blacklisted[receiver],"The client address is blacklisted" ) ;         
+                _safeMint(receiver, tokenId);
+                _setTokenURI(tokenId , tokenURI);
+		emit Minted(receiver , tokenId); 
+                }
+	
+	function burnToken(uint256 tokenId) public onlyOwner {
+                _burn(tokenId); 
+                emit Burned(tokenId);
+                }
+	
+	function setRoyalityFee(uint256 _royalityFee) public onlyOwner {
+        	royalityFee = _royalityFee;
+		}
+	
+	function getRoyalityFee() public view returns (uint256)
+		{
+		return royalityFee ;
+		}
+
+	function setArtist(address _artist) public onlyOwner {
+        	artist = _artist;
+		}
+
+        function getArtist() public view returns (address){
+                return artist ;
+                }
+
+	
+	function addToWhitelist(address user) public onlyOwner {
+                whitelisted[user] = true ;
+                }
+
+        function addToBlacklist(address user) public onlyOwner {
+                blacklisted[user] = true ;
+                }
+
+        function removeFromBlacklist(address user) public onlyOwner {
+                blacklisted[user] = false ;
+                }
+
+        function removeFromWhitelist(address user) public onlyOwner {
+                whitelisted[user] = false ;
+		}
+
+	function getBlacklisted(address user) public view returns (bool){
+                return blacklisted[user] ;
+                }
+
+	function getWhitelisted(address user) public view returns (bool){
+                return whitelisted[user] ;
+                }
+}
