@@ -50,6 +50,6 @@ def mint(contract_address, token_id, event_owner, participant, token_uri):
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     return tx_receipt
     
-print(mint(contract_address_example, 1, event_owner_example, participant_example, "token_uri_test"))
+# print(mint(contract_address_example, 1, event_owner_example, participant_example, "token_uri_test"))
 
 
