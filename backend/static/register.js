@@ -32,4 +32,4 @@ async function register_event()
 		return;
 	});
     }
-	
+
