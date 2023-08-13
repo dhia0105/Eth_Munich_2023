@@ -76,7 +76,7 @@ def add_to_registered(event_name, wallet_address, email_address):
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     return tx_receipt
 
-def check_registred(event_name, wallet_address, email_address):
+def check_registered(event_name, wallet_address, email_address):
     w3 = Web3(Web3.HTTPProvider('https://rpc-mumbai.maticvigil.com/'))
     contract_address = event_contract_map[event_name]
     contract = w3.eth.contract(
@@ -92,7 +92,7 @@ poor_address = "0xF73be91C9caC17dbb6Cc43653D0d70a6Bcc54455"
 rich_address = "0x29FdAf9cE3672ECABD3fd65E3c4A5778fE6Ab442"
 #receip = add_to_registred("s", rich_address, "h")
 #print(receip)
-print("rich : ", check_registred("eth_munich", rich_address, "a"))
-print("poor : ", check_registred("eth_munich", poor_address, "b"))
+print("rich : ", check_registered("eth_munich", rich_address, "a"))
+print("poor : ", check_registered("eth_munich", poor_address, "b"))
 #the rich is always registered
 #What if its a new equal tax regulation event
