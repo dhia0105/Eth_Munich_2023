@@ -22,3 +22,6 @@ Whenever a new event is being organised, we provide this event organisers these 
 As an example:
 a football match event happend when some fans invaded the pitch, the orgonizer blacklisted these persons,
 this information can be valueble for another football match organizer however, its not valuable at all for a concert organizer.  
+
+I highly recoomand adding event type field to the event form.
+regarding the type of event we can use chainlink to give the event owner more information about the molecule logics that are related to his type of event so he can have more insights about which guests to accept regarding their public key.
