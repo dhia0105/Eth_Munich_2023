@@ -2,7 +2,7 @@
 
 pragma solidity >=0.6.0 <0.9.0;
 
-
+import "interfaces/IMoleculeController.sol";
 //Context.sol
 
 /**
@@ -1117,23 +1117,27 @@ contract ticket_event is ERC721URIStorage , Ownable{
 
         address public artist;
         uint256 public royalityFee;
-	mapping (address => bool) public whitelisted;
-        mapping (address => bool) public blacklisted;
+        address public controllerMolecule;
+	mapping (address => bool) public registered;
+    mapping (address => bool) public accepted;
+    mapping (address => bool) public waitlisted;
 	event Minted(address to, uint256 tokenId);
 	event Burned(uint256 tokenId);
         constructor (
                         string memory _name,
                         string memory _symbol,
                         uint256 _royalityFee,
-                        address _artist
+                        address _artist,
+                        address _controllerMolecule
                         ) ERC721( _name , _symbol)
                                 {
                                royalityFee = _royalityFee;
                                 artist = _artist;
+                                controllerMolecule = _controllerMolecule;
                                 }
 
         function mintNft(string memory tokenURI , address receiver , uint256 tokenId) public onlyOwner {
-		require( !blacklisted[receiver],"The client address is blacklisted" ) ;         
+		require( accepted[receiver],"The client address is not accepted" ) ;         
                 _safeMint(receiver, tokenId);
                 _setTokenURI(tokenId , tokenURI);
 		emit Minted(receiver , tokenId); 
@@ -1152,6 +1156,14 @@ contract ticket_event is ERC721URIStorage , Ownable{
 		{
 		return royalityFee ;
 		}
+    function setControllerMolecule(address _controllerMolecule) public onlyOwner {
+        	controllerMolecule = _controllerMolecule;
+		}
+	
+	function getControllerMolecule() public view returns (address)
+		{
+		return controllerMolecule ;
+		}
 
 	function setArtist(address _artist) public onlyOwner {
         	artist = _artist;
@@ -1162,27 +1174,40 @@ contract ticket_event is ERC721URIStorage , Ownable{
                 }
 
 	
-	function addToWhitelist(address user) public onlyOwner {
-                whitelisted[user] = true ;
+	function addToRegisteredlist(address user,  uint32[] memory ids) public onlyOwner {
+        require(
+                IMoleculeController(controllerMolecule).check(ids, user),
+                "User is sanctioned"
+            );
+        registered[user] = true ;
+        }
+
+    function addToWaitlist(address user) public onlyOwner {
+        waitlisted[user] = true ;
+    }
+    function addToAcceptedlist(address user) public onlyOwner {
+        accepted[user] = true ;
+    }
+    function removeFromAccepted(address user) public onlyOwner {
+        accepted[user] = false ;
+    }
+
+    function removeFromRegisteredlist(address user) public onlyOwner {
+        registered[user] = false ;
+	}
+    function removeFromWaitlist(address user) public onlyOwner {
+            waitlisted[user] = false ;
+	}
+
+
+	function getAccepted(address user) public view returns (bool){
+                return accepted[user] ;
                 }
 
-        function addToBlacklist(address user) public onlyOwner {
-                blacklisted[user] = true ;
+	function getRegistered(address user) public view returns (bool){
+                return registered[user] ;
                 }
-
-        function removeFromBlacklist(address user) public onlyOwner {
-                blacklisted[user] = false ;
-                }
-
-        function removeFromWhitelist(address user) public onlyOwner {
-                whitelisted[user] = false ;
-		}
-
-	function getBlacklisted(address user) public view returns (bool){
-                return blacklisted[user] ;
-                }
-
-	function getWhitelisted(address user) public view returns (bool){
-                return whitelisted[user] ;
+    function getWaitListed(address user) public view returns (bool){
+                return waitlisted[user] ;
                 }
 }
