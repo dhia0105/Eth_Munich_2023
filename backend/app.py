@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import json
-from tools import deploy_contract, add_to_registred, verify_blacklisted
+from tools import deploy_contract, add_to_registered, check_registered
 
 app = Flask(__name__, static_folder="./static")
 
@@ -30,10 +30,9 @@ def apply_event():
     email_address = body["emailAddress"]
     wallet_applicant = body["walletApplicant"]
     event_name = body["eventName"]
-    blacklisted = verify_blacklisted(event_name, wallet_applicant)
-    if not blacklisted:
-        registred = add_to_registred(event_name, wallet_applicant, email_address)
-    return jsonify({"Registred":registred})
+    registred = add_to_registered(event_name, wallet_applicant, email_address)
+    registred_status = check_registered(wallet_applicant)
+    return jsonify({"Registred":registred_status})
 
 
 if __name__ == '__main__':

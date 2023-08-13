@@ -6,11 +6,14 @@ mumbai_chain_id = 80001
 private_key="25dc082617530a4e6f92567295c7499b05611c6f097670ea7114a7da7fd4fd6b"
 # i should not share this but i do nothave time for hiiding it please d ont profit from it. it has only development purposes
 public_key="0x29FdAf9cE3672ECABD3fd65E3c4A5778fE6Ab442"
-contract_address_example = "0x720AaAbc778f9d7475DFDcD1583d537CA06bE99D"
 event_owner_example = "0xA046E4E8731C0a47eB9491798dc54e787197006D"
 participant_example = "0xF73be91C9caC17dbb6Cc43653D0d70a6Bcc54455"
+push_notification_contract = "0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa"
+molecule_logic_contract = "0xE88C3d74Bba6Ac3ff78D3E426278475490D24B01"
+molecule_contract_controller = "0xFA8e2c0485934b11A781B586252075b96e2f40A1"
+ticket_contract="0x2B7be7ebF9Cf5c7fE1d0F7309F50A9101C226be3"
 #maps between the address of smart contract of the event nft and the event name 
-event_contract_map = {}
+event_contract_map = {"eth_munich":ticket_contract}
 def deploy_contract(name, symbol, event_owner):
     w3 = Web3(Web3.HTTPProvider('https://rpc-mumbai.maticvigil.com/'))
     
@@ -33,8 +36,9 @@ def deploy_contract(name, symbol, event_owner):
 #address = deploy_contract("eth_mun", "emu", "0xA046E4E8731C0a47eB9491798dc54e787197006D")
 #print(address)
 
-def mint(contract_address, token_id, event_owner, participant, token_uri):
+def mint(event_name, token_id, event_owner, token_uri):
     w3 = Web3(Web3.HTTPProvider('https://rpc-mumbai.maticvigil.com/'))
+    contract_address = event_contract_map[event_name]
     contract = w3.eth.contract(
         address=contract_address,
         abi=contract_abi
@@ -46,26 +50,13 @@ def mint(contract_address, token_id, event_owner, participant, token_uri):
     'chainId': mumbai_chain_id,
     'nonce': w3.eth.get_transaction_count(public_key)
     }
-    #minting_transaction = contract.functions.getRoyalityFee().call()
-    minting_transaction = contract.functions.mintNft(token_uri, event_owner, token_id, participant).build_transaction(transaction)
+    minting_transaction = contract.functions.mintNft(token_uri, event_owner, token_id).build_transaction(transaction)
     signed_transaction = w3.eth.account.sign_transaction(minting_transaction, private_key)
     tx_hash=w3.eth.send_raw_transaction(signed_transaction.rawTransaction)
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     return tx_receipt
     
-# print(mint(contract_address_example, 1, event_owner_example, participant_example, "token_uri_test"))
-def verify_blacklisted(event_name, wallet_address):
-    w3 = Web3(Web3.HTTPProvider('https://rpc-mumbai.maticvigil.com/'))
-    contract_address = event_contract_map[event_name]
-    contract = w3.eth.contract(
-        address=contract_address,
-        abi=contract_abi
-    )
-    blacklisted = contract.functions.checkBlacklisted(wallet_address).call()
-    return blacklisted
-
-
-def add_to_registred(event_name, wallet_address, email_address):
+def add_to_registered(event_name, wallet_address, email_address):
     w3 = Web3(Web3.HTTPProvider('https://rpc-mumbai.maticvigil.com/'))
     contract_address = event_contract_map[event_name]
     contract = w3.eth.contract(
@@ -79,9 +70,29 @@ def add_to_registred(event_name, wallet_address, email_address):
     'chainId': mumbai_chain_id,
     'nonce': w3.eth.get_transaction_count(public_key)
     }
-    minting_transaction = contract.functions.addToRegistred(wallet_address).build_transaction(transaction)
+    minting_transaction = contract.functions.addToRegisteredlist(wallet_address,[1]).build_transaction(transaction)
     signed_transaction = w3.eth.account.sign_transaction(minting_transaction, private_key)
     tx_hash=w3.eth.send_raw_transaction(signed_transaction.rawTransaction)
     tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
     return tx_receipt
 
+def check_registred(event_name, wallet_address, email_address):
+    w3 = Web3(Web3.HTTPProvider('https://rpc-mumbai.maticvigil.com/'))
+    contract_address = event_contract_map[event_name]
+    contract = w3.eth.contract(
+        address=contract_address,
+        abi=contract_abi
+    )
+    registered_status = contract.functions.getRegistered(wallet_address).call()
+    return {"registered?":registered_status}
+
+
+#testing purposes
+poor_address = "0xF73be91C9caC17dbb6Cc43653D0d70a6Bcc54455"
+rich_address = "0x29FdAf9cE3672ECABD3fd65E3c4A5778fE6Ab442"
+#receip = add_to_registred("s", rich_address, "h")
+#print(receip)
+print("rich : ", check_registred("eth_munich", rich_address, "a"))
+print("poor : ", check_registred("eth_munich", poor_address, "b"))
+#the rich is always registered
+#What if its a new equal tax regulation event
